@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var player = $Player
 @onready var score_label = $ScoreLabel
+@onready var restart_message = $RestartMessage
 
 const GRAVITY = 1000
 const JUMP_FORCE = -400
@@ -16,7 +17,30 @@ var pipes = []
 # Preload the pipe scene
 var pipe_scene = preload("res://pipe.tscn")
 
+func reset_game():
+	# Reset game state
+	game_over = false
+	score = 0
+	restart_message.visible = false
+	velocity = Vector2.ZERO
+	
+	# Reset player position
+	player.position.x = 100  # Starting x position
+	player.position.y = 300  # Middle of screen
+	
+	# Clear existing pipes
+	for pipe in pipes:
+		pipe.queue_free()
+	pipes.clear()
+	
+	# Reset score display
+	score_label.text = "0"
+
 func _ready():
+	# Initialize player position
+	player.position.x = 100
+	player.position.y = 300
+	
 	# Start pipe spawning
 	var timer = Timer.new()
 	timer.wait_time = SPAWN_TIME
@@ -26,6 +50,9 @@ func _ready():
 	
 func _process(delta):
 	if game_over:
+		# Check for restart input
+		if Input.is_action_just_pressed("jump") or Input.is_key_pressed(KEY_R):
+			reset_game()
 		return
 		
 	# Apply gravity
@@ -49,6 +76,7 @@ func _process(delta):
 		if top_area.overlaps_body(player) or bottom_area.overlaps_body(player):
 			game_over = true
 			score_label.text = "Game Over!\nScore: " + str(score)
+			restart_message.visible = true
 			
 		# Remove pipes that are off screen
 		if pipe.position.x < -50:
