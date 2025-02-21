@@ -2,17 +2,30 @@ extends Node2D
 
 @onready var player = $Player
 @onready var score_label = $ScoreLabel
-@onready var restart_message = $RestartMessage
+@onready var restart_message = $UI/RestartMessage
 
-const GRAVITY = 1000
+# Level 1 settings
+const GRAVITY_L1 = 1000
+const PIPE_SPEED_L1 = 200
+const SPAWN_TIME_L1 = 1.5
+
+# Level 2 settings
+const GRAVITY_L2 = 1500
+const PIPE_SPEED_L2 = 300
+const SPAWN_TIME_L2 = 1.0
+
 const JUMP_FORCE = -400
-const PIPE_SPEED = 200
-const SPAWN_TIME = 1.5
+const LEVEL_THRESHOLD = 50
 
 var velocity = Vector2.ZERO
 var score = 0
 var game_over = false
 var pipes = []
+var current_level = 1
+var current_gravity = GRAVITY_L1
+var current_pipe_speed = PIPE_SPEED_L1
+var current_spawn_time = SPAWN_TIME_L1
+var level_transition_time = 0
 
 # Preload the pipe scene
 var pipe_scene = preload("res://pipe.tscn")
@@ -21,6 +34,10 @@ func reset_game():
 	# Reset game state
 	game_over = false
 	score = 0
+	current_level = 1
+	current_gravity = GRAVITY_L1
+	current_pipe_speed = PIPE_SPEED_L1
+	current_spawn_time = SPAWN_TIME_L1
 	restart_message.visible = false
 	velocity = Vector2.ZERO
 	
@@ -40,12 +57,13 @@ func _ready():
 	# Initialize player position
 	player.position.x = 100
 	player.position.y = 300
-	
 	# Start pipe spawning
 	var timer = Timer.new()
-	timer.wait_time = SPAWN_TIME
+	timer.wait_time = current_spawn_time
 	timer.timeout.connect(spawn_pipe)
 	add_child(timer)
+	timer.name = "PipeTimer"
+	timer.start()
 	timer.start()
 	
 func _process(delta):
@@ -55,8 +73,14 @@ func _process(delta):
 			reset_game()
 		return
 		
+	# Handle level transition visual effect
+	if level_transition_time > 0:
+		level_transition_time -= delta
+		if level_transition_time <= 0:
+			$LevelUpLabel.visible = false
+
 	# Apply gravity
-	velocity.y += GRAVITY * delta
+	velocity.y += current_gravity * delta
 	
 	# Handle jump input
 	if Input.is_action_just_pressed("jump"):
@@ -68,7 +92,7 @@ func _process(delta):
 	# Move pipes
 	var pipes_to_remove = []
 	for pipe in pipes:
-		pipe.position.x -= PIPE_SPEED * delta
+		pipe.position.x -= current_pipe_speed * delta
 		
 		# Check for collision
 		var top_area = pipe.get_node("TopArea")
@@ -83,9 +107,21 @@ func _process(delta):
 			pipes_to_remove.append(pipe)
 			
 		# Score when passing pipe center
-		if !game_over and pipe.position.x + 25 < player.position.x and !pipe.get_meta("passed", false):
 			score += 1
 			pipe.set_meta("passed", true)
+			
+			# Check for level progression
+			if score == LEVEL_THRESHOLD and current_level == 1:
+				current_level = 2
+				current_gravity = GRAVITY_L2
+				current_pipe_speed = PIPE_SPEED_L2
+				get_node("PipeTimer").wait_time = SPAWN_TIME_L2
+				
+				# Show level up message
+				$LevelUpLabel.visible = true
+				level_transition_time = 2.0
+			
+			score_label.text = "Score: " + str(score) + "\nLevel: " + str(current_level)
 			score_label.text = str(score)
 	
 	# Remove old pipes
