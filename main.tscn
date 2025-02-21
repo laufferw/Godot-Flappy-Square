@@ -1,0 +1,52 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6c7kqkcdxw0y"]
+
+[ext_resource type="Script" path="res://main.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(30, 30)
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1")
+
+[node name="Player" type="CharacterBody2D" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="Player"]
+offset_right = 30.0
+offset_bottom = 30.0
+color = Color(1, 1, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+position = Vector2(15, 15)
+shape = SubResource("RectangleShape2D_1")
+
+[node name="TopBorder" type="ColorRect" parent="."]
+offset_right = 480.0
+offset_bottom = 20.0
+color = Color(0, 0.75, 0.75, 1)
+
+[node name="BottomBorder" type="ColorRect" parent="."]
+offset_top = 620.0
+offset_right = 480.0
+offset_bottom = 640.0
+color = Color(0, 0.75, 0.75, 1)
+
+[node name="LeftBorder" type="ColorRect" parent="."]
+offset_right = 20.0
+offset_bottom = 640.0
+color = Color(0, 0.75, 0.75, 1)
+
+[node name="RightBorder" type="ColorRect" parent="."]
+offset_left = 460.0
+offset_right = 480.0
+offset_bottom = 640.0
+color = Color(0, 0.75, 0.75, 1)
+
+[node name="ScoreLabel" type="Label" parent="."]
+offset_left = 220.0
+offset_top = 50.0
+offset_right = 260.0
+offset_bottom = 76.0
+theme_override_font_sizes/font_size = 32
+text = "0"
+horizontal_alignment = 1
+
