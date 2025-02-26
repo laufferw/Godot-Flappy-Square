@@ -1,8 +1,9 @@
 extends Node2D
 
 @onready var player = $Player
-@onready var score_label = $ScoreLabel
+@onready var score_label = $UI/ScoreLabel
 @onready var restart_message = $UI/RestartMessage
+@onready var high_score_label = $UI/HighScoreLabel
 
 # Level 1 settings
 const GRAVITY_L1 = 1000
@@ -14,11 +15,17 @@ const GRAVITY_L2 = 1500
 const PIPE_SPEED_L2 = 300
 const SPAWN_TIME_L2 = 1.0
 
-const JUMP_FORCE = -400
-const LEVEL_THRESHOLD = 50
+# Level 3 settings
+const GRAVITY_L3 = 2000
+const PIPE_SPEED_L3 = 400
+const SPAWN_TIME_L3 = 0.8
 
+const JUMP_FORCE = -400
+const LEVEL_THRESHOLD = 25
+const LEVEL3_THRESHOLD = 50
 var velocity = Vector2.ZERO
 var score = 0
+var high_score = 0
 var game_over = false
 var pipes = []
 var current_level = 1
@@ -29,6 +36,7 @@ var level_transition_time = 0
 
 # Preload the pipe scene
 var pipe_scene = preload("res://pipe.tscn")
+
 
 func reset_game():
 	# Reset game state
@@ -43,7 +51,7 @@ func reset_game():
 	
 	# Reset player position
 	player.position.x = 100  # Starting x position
-	player.position.y = 300  # Middle of screen
+	player.position.y = 300  # Middle of screen (window height is approximately 610px)
 	
 	# Clear existing pipes
 	for pipe in pipes:
@@ -51,19 +59,25 @@ func reset_game():
 	pipes.clear()
 	
 	# Reset score display
-	score_label.text = "0"
+	score_label.text = "Score: 0\nLevel: 1"
+	update_high_score_display()
 
 func _ready():
 	# Initialize player position
 	player.position.x = 100
 	player.position.y = 300
+	
+	# Load high score if available
+	load_high_score()
+	update_high_score_display()
+	
+	
 	# Start pipe spawning
 	var timer = Timer.new()
 	timer.wait_time = current_spawn_time
 	timer.timeout.connect(spawn_pipe)
 	add_child(timer)
 	timer.name = "PipeTimer"
-	timer.start()
 	timer.start()
 	
 func _process(delta):
@@ -77,7 +91,7 @@ func _process(delta):
 	if level_transition_time > 0:
 		level_transition_time -= delta
 		if level_transition_time <= 0:
-			$LevelUpLabel.visible = false
+			$UI/LevelUpLabel.visible = false
 
 	# Apply gravity
 	velocity.y += current_gravity * delta
@@ -99,14 +113,18 @@ func _process(delta):
 		var bottom_area = pipe.get_node("BottomArea")
 		if top_area.overlaps_body(player) or bottom_area.overlaps_body(player):
 			game_over = true
+			# Update high score if needed
+			if score > high_score:
+				high_score = score
+				save_high_score()
+			
+			# Update game over screen
 			score_label.text = "Game Over!\nScore: " + str(score)
+			update_high_score_display()
 			restart_message.visible = true
 			
-		# Remove pipes that are off screen
-		if pipe.position.x < -50:
-			pipes_to_remove.append(pipe)
-			
 		# Score when passing pipe center
+		if not pipe.get_meta("passed", false) and pipe.position.x < player.position.x:
 			score += 1
 			pipe.set_meta("passed", true)
 			
@@ -118,11 +136,26 @@ func _process(delta):
 				get_node("PipeTimer").wait_time = SPAWN_TIME_L2
 				
 				# Show level up message
-				$LevelUpLabel.visible = true
+				$UI/LevelUpLabel.text = "Level " + str(current_level) + "!"
+				$UI/LevelUpLabel.visible = true
+				level_transition_time = 2.0
+			elif score == LEVEL3_THRESHOLD and current_level == 2:
+				current_level = 3
+				current_gravity = GRAVITY_L3
+				current_pipe_speed = PIPE_SPEED_L3
+				get_node("PipeTimer").wait_time = SPAWN_TIME_L3
+				
+				# Show level up message
+				$UI/LevelUpLabel.text = "Level " + str(current_level) + "!"
+				$UI/LevelUpLabel.visible = true
 				level_transition_time = 2.0
 			
+			# Update score display
 			score_label.text = "Score: " + str(score) + "\nLevel: " + str(current_level)
-			score_label.text = str(score)
+			
+		# Remove pipes that are off screen
+		if pipe.position.x < -50:
+			pipes_to_remove.append(pipe)
 	
 	# Remove old pipes
 	for pipe in pipes_to_remove:
@@ -141,6 +174,18 @@ func _process(delta):
 		player.position.x = 20
 	elif player.position.x >= 430:  # Right border - player width
 		player.position.x = 430
+		
+func save_high_score():
+	var save_game = FileAccess.open("user://highscore.save", FileAccess.WRITE)
+	save_game.store_var(high_score)
+	
+func load_high_score():
+	if FileAccess.file_exists("user://highscore.save"):
+		var save_game = FileAccess.open("user://highscore.save", FileAccess.READ)
+		high_score = save_game.get_var()
+		
+func update_high_score_display():
+	high_score_label.text = "High Score: " + str(high_score)
 
 func spawn_pipe():
 	if game_over:

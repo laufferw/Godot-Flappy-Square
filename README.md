@@ -4,7 +4,7 @@ A minimalist take on the classic Flappy Bird game, featuring a square protagonis
 
 ## Game Description
 
-Flappy Square is a side-scrolling game where you control a square that must navigate through gaps between pipes. The game features simple controls but challenging gameplay, testing your timing and reflexes.
+Flappy Square is a side-scrolling game where you control a square that must navigate through gaps between pipes. The game features simple controls but challenging gameplay, testing your timing and reflexes. Progress through levels by collecting points, with the first level completion at 50 points.
 
 ## Technical Details
 
@@ -41,6 +41,8 @@ Flappy Square is a side-scrolling game where you control a square that must navi
 - Press SPACE or LEFT MOUSE BUTTON to make the square jump
 - Navigate through the gaps between pipes
 - Avoid hitting the pipes or the ground
+- Collect points by passing through pipes
+- Complete levels by reaching point thresholds (first level: 50 points)
 - Try to achieve the highest score possible!
 
 ## Development Details
@@ -50,6 +52,9 @@ Flappy Square is a side-scrolling game where you control a square that must navi
   - Minimalist approach to graphics focusing on gameplay
 - Simple yet precise collision detection
 - Score tracking system
+- Level progression system:
+  - First level completes at 50 points
+  - Progressive difficulty increase
 - Responsive controls
 
 ## Contributing
