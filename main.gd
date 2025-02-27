@@ -4,6 +4,10 @@ extends Node2D
 @onready var score_label = $UI/ScoreLabel
 @onready var restart_message = $UI/RestartMessage
 @onready var high_score_label = $UI/HighScoreLabel
+@onready var jump_sound = $JumpSound
+@onready var score_sound = $ScoreSound
+@onready var level_up_sound = $LevelUpSound
+@onready var game_over_sound = $GameOverSound
 
 # Level 1 settings
 const GRAVITY_L1 = 1000
@@ -36,7 +40,6 @@ var level_transition_time = 0
 
 # Preload the pipe scene
 var pipe_scene = preload("res://pipe.tscn")
-
 
 func reset_game():
 	# Reset game state
@@ -71,6 +74,49 @@ func _ready():
 	load_high_score()
 	update_high_score_display()
 	
+	# Load audio streams directly using AudioStreamWAV
+	var audio_dir = "res://sounds/"
+
+	# Create AudioStreamWAV objects manually
+	if FileAccess.file_exists(audio_dir + "jump.wav"):
+		var stream = AudioStreamWAV.new()
+		var file = FileAccess.open(audio_dir + "jump.wav", FileAccess.READ)
+		if file:
+			var buffer = file.get_buffer(file.get_length())
+			stream.data = buffer
+			jump_sound.stream = stream
+			jump_sound.volume_db = -6.0
+			print("Jump sound loaded successfully")
+
+	if FileAccess.file_exists(audio_dir + "score.wav"):
+		var stream = AudioStreamWAV.new()
+		var file = FileAccess.open(audio_dir + "score.wav", FileAccess.READ)
+		if file:
+			var buffer = file.get_buffer(file.get_length())
+			stream.data = buffer
+			score_sound.stream = stream
+			score_sound.volume_db = -6.0
+			print("Score sound loaded successfully")
+			
+	if FileAccess.file_exists(audio_dir + "level_up.wav"):
+		var stream = AudioStreamWAV.new()
+		var file = FileAccess.open(audio_dir + "level_up.wav", FileAccess.READ)
+		if file:
+			var buffer = file.get_buffer(file.get_length())
+			stream.data = buffer
+			level_up_sound.stream = stream
+			level_up_sound.volume_db = -6.0
+			print("Level up sound loaded successfully")
+			
+	if FileAccess.file_exists(audio_dir + "game_over.wav"):
+		var stream = AudioStreamWAV.new()
+		var file = FileAccess.open(audio_dir + "game_over.wav", FileAccess.READ)
+		if file:
+			var buffer = file.get_buffer(file.get_length())
+			stream.data = buffer
+			game_over_sound.stream = stream
+			game_over_sound.volume_db = -6.0
+			print("Game over sound loaded successfully")
 	
 	# Start pipe spawning
 	var timer = Timer.new()
@@ -99,6 +145,8 @@ func _process(delta):
 	# Handle jump input
 	if Input.is_action_just_pressed("jump"):
 		velocity.y = JUMP_FORCE
+		if jump_sound.stream:
+			jump_sound.play()
 	
 	# Update player position
 	player.position += velocity * delta
@@ -113,6 +161,8 @@ func _process(delta):
 		var bottom_area = pipe.get_node("BottomArea")
 		if top_area.overlaps_body(player) or bottom_area.overlaps_body(player):
 			game_over = true
+			if game_over_sound.stream:
+				game_over_sound.play()
 			# Update high score if needed
 			if score > high_score:
 				high_score = score
@@ -127,6 +177,8 @@ func _process(delta):
 		if not pipe.get_meta("passed", false) and pipe.position.x < player.position.x:
 			score += 1
 			pipe.set_meta("passed", true)
+			if score_sound.stream:
+				score_sound.play()
 			
 			# Check for level progression
 			if score == LEVEL_THRESHOLD and current_level == 1:
@@ -138,6 +190,8 @@ func _process(delta):
 				# Show level up message
 				$UI/LevelUpLabel.text = "Level " + str(current_level) + "!"
 				$UI/LevelUpLabel.visible = true
+				if level_up_sound.stream:
+					level_up_sound.play()
 				level_transition_time = 2.0
 			elif score == LEVEL3_THRESHOLD and current_level == 2:
 				current_level = 3
@@ -148,6 +202,8 @@ func _process(delta):
 				# Show level up message
 				$UI/LevelUpLabel.text = "Level " + str(current_level) + "!"
 				$UI/LevelUpLabel.visible = true
+				if level_up_sound.stream:
+					level_up_sound.play()
 				level_transition_time = 2.0
 			
 			# Update score display

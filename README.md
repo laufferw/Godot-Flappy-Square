@@ -13,6 +13,7 @@ Flappy Square is a side-scrolling game where you control a square that must navi
   - Gravity: 1000
   - Jump Force: -400
 - Visual Style: Minimalist design with teal borders for visual clarity
+- Audio system with volume-controlled sound effects
 
 ## Requirements
 
@@ -56,6 +57,15 @@ Flappy Square is a side-scrolling game where you control a square that must navi
   - First level completes at 50 points
   - Progressive difficulty increase
 - Responsive controls
+
+## Audio Features
+
+- Sound effects for important game events:
+  - Jump sound when the player jumps
+  - Score sound when passing through pipes
+  - Level up sound when progressing to a new level
+  - Game over sound when the game ends
+- Optimized audio volume for comfortable gameplay
 
 ## Contributing
 
