@@ -1,6 +1,35 @@
-[gd_scene load_steps=2 format=3 uid="uid://b6c7kqkcdxw0y"]
+[gd_scene load_steps=4 format=3 uid="uid://b6c7kqkcdxw0y"]
 
 [ext_resource type="Script" path="res://main.gd" id="1"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_1"]
+emission_shape = 1
+emission_sphere_radius = 5.0
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 30.0
+gravity = Vector3(0, 98, 0)
+initial_velocity_min = 50.0
+initial_velocity_max = 80.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+scale_min = 2.0
+scale_max = 4.0
+color = Color(1, 1, 1, 1)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_2"]
+emission_shape = 1
+emission_sphere_radius = 1.0
+particle_flag_disable_z = true
+spread = 180.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 100.0
+initial_velocity_max = 200.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+scale_min = 3.0
+scale_max = 6.0
+color = Color(1, 0.5, 0.5, 1)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(30, 30)
@@ -18,6 +47,83 @@ color = Color(1, 1, 1, 1)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
 position = Vector2(15, 15)
 shape = SubResource("RectangleShape2D_1")
+
+[node name="JumpParticles" type="GPUParticles2D" parent="Player"]
+position = Vector2(15, 15)
+emitting = false
+amount = 20
+process_material = SubResource("ParticleProcessMaterial_1")
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+
+[node name="CollisionParticles" type="GPUParticles2D" parent="Player"]
+position = Vector2(15, 15)
+emitting = false
+amount = 30
+process_material = SubResource("ParticleProcessMaterial_2")
+lifetime = 0.7
+one_shot = true
+explosiveness = 1.0
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+scroll_offset = Vector2(0, 0)
+
+[node name="FarBackground" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.2, 0.2)
+motion_mirroring = Vector2(480, 0)
+
+[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/FarBackground"]
+offset_right = 480.0
+offset_bottom = 640.0
+color = Color(0.1, 0.1, 0.15, 1)
+
+[node name="MiddleLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.5, 0.5)
+motion_mirroring = Vector2(480, 0)
+
+[node name="Shapes" type="Node2D" parent="ParallaxBackground/MiddleLayer"]
+
+[node name="Shape1" type="ColorRect" parent="ParallaxBackground/MiddleLayer/Shapes"]
+offset_left = 50.0
+offset_top = 100.0
+offset_right = 80.0
+offset_bottom = 130.0
+color = Color(0.2, 0.2, 0.3, 1)
+
+[node name="Shape2" type="ColorRect" parent="ParallaxBackground/MiddleLayer/Shapes"]
+offset_left = 200.0
+offset_top = 400.0
+offset_right = 240.0
+offset_bottom = 440.0
+color = Color(0.2, 0.2, 0.3, 1)
+
+[node name="Shape3" type="ColorRect" parent="ParallaxBackground/MiddleLayer/Shapes"]
+offset_left = 350.0
+offset_top = 200.0
+offset_right = 380.0
+offset_bottom = 230.0
+color = Color(0.2, 0.2, 0.3, 1)
+
+[node name="NearLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.8, 0.8)
+motion_mirroring = Vector2(480, 0)
+
+[node name="Shapes" type="Node2D" parent="ParallaxBackground/NearLayer"]
+
+[node name="Shape1" type="ColorRect" parent="ParallaxBackground/NearLayer/Shapes"]
+offset_left = 100.0
+offset_top = 150.0
+offset_right = 120.0
+offset_bottom = 170.0
+color = Color(0.3, 0.3, 0.4, 1)
+
+[node name="Shape2" type="ColorRect" parent="ParallaxBackground/NearLayer/Shapes"]
+offset_left = 300.0
+offset_top = 450.0
+offset_right = 330.0
+offset_bottom = 480.0
+color = Color(0.3, 0.3, 0.4, 1)
 
 [node name="TopBorder" type="ColorRect" parent="."]
 offset_right = 480.0
@@ -42,6 +148,15 @@ offset_bottom = 640.0
 color = Color(0, 0.75, 0.75, 1)
 
 [node name="UI" type="CanvasLayer" parent="."]
+
+[node name="FlashEffect" type="ColorRect" parent="UI"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 480.0
+offset_bottom = 640.0
+color = Color(1, 1, 1, 0)
 
 [node name="RestartMessage" type="Label" parent="UI"]
 visible = false
@@ -79,6 +194,17 @@ offset_bottom = 350.0
 theme_override_font_sizes/font_size = 32
 text = "Level 2!"
 horizontal_alignment = 1
+
+[node name="SlowMotionBar" type="ProgressBar" parent="UI"]
+visible = false
+offset_left = 20.0
+offset_top = 580.0
+offset_right = 160.0
+offset_bottom = 600.0
+theme_override_colors/font_color = Color(0.2, 0.8, 1.0, 1.0)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+max_value = 5.0
+value = 5.0
 
 [node name="JumpSound" type="AudioStreamPlayer" parent="."]
 
